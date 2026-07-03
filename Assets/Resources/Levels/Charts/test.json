@@ -1,0 +1,21 @@
+{
+  "Title": "Tutorial",
+  "BPM": 120,
+  "Notes": [
+    {
+      "Tick": 0,
+      "Type": 0,
+      "Length": 0
+    },
+    {
+      "Tick": 480,
+      "Type": 1,
+      "Length": 960
+    },
+    {
+      "Tick": 1920,
+      "Type": 0,
+      "Length": 0
+    }
+  ]
+}
