@@ -78,8 +78,9 @@ public class ChartManager : MonoBehaviour
         }
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
-        StartCoroutine(LoadChartsCoroutine());
+        yield return StartCoroutine(LoadChartsCoroutine());
+        SetChart("test");
     }
 }

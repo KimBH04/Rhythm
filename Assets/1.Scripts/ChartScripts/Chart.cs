@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using UnityEngine;
 
 [Serializable]
-public struct NoteData
+public struct NoteData : IComparable<NoteData>
 {
     public ulong Tick { get; private set; }
 
@@ -12,6 +14,19 @@ public struct NoteData
     public NoteType Type { get; private set; }
 
     public ulong Length { get; private set; }
+
+    public NoteData(ulong tick, byte line, NoteType type, ulong length = 0)
+    {
+        Tick = tick;
+        Line = line;
+        Type = type;
+        Length = length;
+    }
+
+    public readonly int CompareTo(NoteData other)
+    {
+        return Tick.CompareTo(other.Tick);
+    }
 
     public enum NoteType
     {
@@ -31,4 +46,11 @@ public class ChartData
 
     [JsonIgnore]
     public AudioClip Clip { get; set; }
+
+    public ChartData(string title, int bpm, IEnumerable<NoteData> notes)
+    {
+        Title = title;
+        BPM = bpm;
+        Notes = notes.ToArray();
+    }
 }
