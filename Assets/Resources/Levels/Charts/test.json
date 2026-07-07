@@ -3,20 +3,44 @@
   "BPM": 120,
   "Notes": [
     {
-      "Tick": 0,
-      "Line": 0,
+      "Tick": 1000000,
+      "Line": 1,
       "Type": 0,
       "Length": 0
     },
     {
-      "Tick": 480,
-      "Line": 0,
-      "Type": 1,
-      "Length": 960
+      "Tick": 2000000,
+      "Line": 2,
+      "Type": 0,
+      "Length": 0
     },
     {
-      "Tick": 1920,
-      "Line": 0,
+      "Tick": 3000000,
+      "Line": 3,
+      "Type": 0,
+      "Length": 0
+    },
+    {
+      "Tick": 4000000,
+      "Line": 2,
+      "Type": 0,
+      "Length": 0
+    },
+    {
+      "Tick": 5000000,
+      "Line": 3,
+      "Type": 0,
+      "Length": 0
+    },
+    {
+      "Tick": 6000000,
+      "Line": 2,
+      "Type": 0,
+      "Length": 0
+    },
+    {
+      "Tick": 7000000,
+      "Line": 3,
       "Type": 0,
       "Length": 0
     }

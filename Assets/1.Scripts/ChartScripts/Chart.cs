@@ -7,15 +7,16 @@ using UnityEngine;
 [Serializable]
 public struct NoteData : IComparable<NoteData>
 {
-    public ulong Tick { get; private set; }
+    public long Tick { get; private set; }
 
-    public byte Line { get; private set; }
+    public int Line { get; private set; }
 
     public NoteType Type { get; private set; }
 
-    public ulong Length { get; private set; }
-
-    public NoteData(ulong tick, byte line, NoteType type, ulong length = 0)
+    public long Length { get; private set; }
+    
+    [JsonConstructor]
+    public NoteData(long tick, int line, NoteType type, long length = 0)
     {
         Tick = tick;
         Line = line;
@@ -32,6 +33,7 @@ public struct NoteData : IComparable<NoteData>
     {
         Short,
         Long,
+        LongTail,
     }
 }
 
@@ -42,15 +44,23 @@ public class ChartData
 
     public int BPM { get; private set; }
 
-    public NoteData[] Notes { get; private set;}
+    public List<NoteData> Notes { get; private set; }
 
     [JsonIgnore]
     public AudioClip Clip { get; set; }
+
+    [JsonConstructor]
+    public ChartData(string title, int bpm, List<NoteData> notes)
+    {
+        Title = title;
+        BPM = bpm;
+        Notes = notes.ToList();
+    }
 
     public ChartData(string title, int bpm, IEnumerable<NoteData> notes)
     {
         Title = title;
         BPM = bpm;
-        Notes = notes.ToArray();
+        Notes = notes.ToList();
     }
 }
