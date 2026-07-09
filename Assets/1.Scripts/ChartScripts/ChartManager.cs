@@ -6,8 +6,16 @@ using UnityEngine;
 
 public class ChartManager : MonoBehaviour
 {
-    public const float TICK_RATE = 1000000f;
+    public const float TICK_RATE = ChartPlayer.TICK_RATE;
+
+    public static ChartManager Instance { get; private set; }
+
+    public static float Speed => Instance.speed;
+
     public static ChartData Chart { get; private set; }
+    public static IReadOnlyList<Note> Notes => notes;
+
+    private readonly static List<Note> notes = new();
 
     private static ChartPlayer player;
 
@@ -96,12 +104,24 @@ public class ChartManager : MonoBehaviour
         player.OnCancel(index);
     }
 
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
+        }
+    }
+
     private IEnumerator Start()
     {
         yield return LoadChartsCoroutine();
         SetChart("test");
-        player = new();
         PlaceNotes();
+        player = new();
 
         player.JudgeEvent += DisplayJudgment;
         player.OnPlayEnd += OnEnd;
@@ -109,17 +129,33 @@ public class ChartManager : MonoBehaviour
 
         while (!player.IsEnd)
         {
-            rootTr.localPosition = new(0f, -player.CurrentTick * speed / TICK_RATE);
+            rootTr.localPosition = new(0f, -player.CurrentTick / TICK_RATE * speed);
             yield return null;
         }
     }   
 
     private void PlaceNotes()
     {
-        foreach (var note in Chart.Notes)
+        notes.Clear();
+        foreach (var data in Chart.Notes)
         {
-            Vector3 pos = new(lineLocates[note.Line], note.Tick * speed / TICK_RATE);
-            Instantiate(noteObj, pos + transform.position, Quaternion.identity, rootTr);
+            Vector3 pos = new(lineLocates[data.Line], data.Tick / TICK_RATE * speed);
+            var note = Instantiate(noteObj, pos + transform.position, Quaternion.identity, rootTr).GetComponent<Note>();
+            note.Data = data;
+            notes.Add(note);
+            
+            if (data.Type == NoteData.NoteType.Long)
+            {
+                pos.y = (data.Tick + data.Length) / TICK_RATE * speed;
+                var tail = Instantiate(noteObj, pos + transform.position, Quaternion.identity, rootTr).GetComponent<Note>();
+                tail.Data = new(
+                    data.Tick + data.Length,
+                    data.Line,
+                    NoteData.NoteType.LongTail,
+                    -data.Length
+                );
+                notes.Add(tail);
+            }
         }
     }
 
@@ -130,6 +166,6 @@ public class ChartManager : MonoBehaviour
 
     private void OnEnd()
     {
-        Debug.Log("end");
+        //Debug.Log("end");
     }
 }

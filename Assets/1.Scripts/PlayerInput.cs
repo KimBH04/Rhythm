@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,13 +14,22 @@ public class PlayerInput : MonoBehaviour
 
     public void OnButtonAction(InputAction.CallbackContext context)
     {
+        int idx = context.action.name switch
+        {
+            "1" => 0,
+            "2" => 1,
+            "3" => 2,
+            "4" => 3,
+            _   => throw new ArgumentOutOfRangeException($"{context.action.name} is invalid name.")
+        };
+
         if (context.started)
         {
-            chartManager.OnClick((int)context.ReadValue<float>());
+            chartManager.OnClick(idx);
         }
         else if (context.canceled)
         {
-            chartManager.OnCancel((int)context.ReadValue<float>());
+            chartManager.OnCancel(idx);
         }
     }
 }

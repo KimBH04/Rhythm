@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using UnityEngine;
 
 [Serializable]
-public struct NoteData : IComparable<NoteData>
+public class NoteData : IComparable<NoteData>
 {
     public long Tick { get; private set; }
 
@@ -14,7 +14,7 @@ public struct NoteData : IComparable<NoteData>
     public NoteType Type { get; private set; }
 
     public long Length { get; private set; }
-    
+
     [JsonConstructor]
     public NoteData(long tick, int line, NoteType type, long length = 0)
     {
@@ -24,7 +24,7 @@ public struct NoteData : IComparable<NoteData>
         Length = length;
     }
 
-    public readonly int CompareTo(NoteData other)
+    public int CompareTo(NoteData other)
     {
         return Tick.CompareTo(other.Tick);
     }

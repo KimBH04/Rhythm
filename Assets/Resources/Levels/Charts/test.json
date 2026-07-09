@@ -11,8 +11,8 @@
     {
       "Tick": 2000000,
       "Line": 2,
-      "Type": 0,
-      "Length": 0
+      "Type": 1,
+      "Length": 1000000
     },
     {
       "Tick": 3000000,

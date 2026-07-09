@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Debug = UnityEngine.Debug;
 
 public class ChartPlayer
 {
@@ -43,15 +42,15 @@ public class ChartPlayer
             TickAdvancedBy += line.DequeueNote;
         }
 
-        foreach (var note in Data.Notes)
+        foreach (var note in ChartManager.Notes)
         {
-            Lines[note.Line].AddNote(note);
+            Lines[note.Data.Line].AddNote(note);
         }
     }
 
     public IEnumerator Play()
     {
-        timer.Start();
+        timer.Restart();
 
         while (!IsEnd)
         {
@@ -77,50 +76,21 @@ public class ChartPlayer
     {
         private int currentNoteIdx = 0;
 
-        private readonly List<NoteData> NoteList = new();
+        private readonly List<Note> NoteList = new();
 
-        private readonly Queue<NoteData> JudgeQueue = new();
+        private readonly Queue<Note> JudgeQueue = new();
 
         public event Action<JudgeResult> JudgeEvent;
 
         public bool IsEnd()
         {
             return JudgeQueue.Count == 0 &&
-                   NoteList.Count == currentNoteIdx;
+                   NoteList.Count <= currentNoteIdx;
         }
 
-        public void AddNote(NoteData data)
+        public void AddNote(Note data)
         {
-            int left = 0;
-            int right = NoteList.Count;
-            while (left < right)
-            {
-                int mid = (left + right) >> 1;
-                if (NoteList[mid].Tick < data.Tick)
-                {
-                    left = mid + 1;
-                }
-                else if (NoteList[mid].Tick > data.Tick)
-                {
-                    right = mid;
-                }
-                else
-                {
-                    Debug.LogWarning($"{data.Tick} is repeated.");
-                    return;
-                }
-            }
-
-            if (data.Type == NoteData.NoteType.Long)
-            {
-                NoteList.Insert(left,
-                    new(data.Tick + data.Length,
-                        data.Line,
-                        NoteData.NoteType.LongTail)
-                );
-            }
-
-            NoteList.Insert(left, data);
+            NoteList.Add(data);
         }
 
         public void EnqueueNote(long currentTick)
@@ -132,47 +102,73 @@ public class ChartPlayer
             {
                 JudgeQueue.Enqueue(NoteList[currentNoteIdx]);
                 currentNoteIdx++;
+
+                if (currentNoteIdx < NoteList.Count &&
+                    NoteList[currentNoteIdx].Data.Type == NoteData.NoteType.LongTail)
+                {
+                    JudgeQueue.Enqueue(NoteList[currentNoteIdx]);
+                    currentNoteIdx++;
+                }
             }
         }
 
         public void DequeueNote(long currentTick)
         {
-            while (JudgeQueue.TryPeek(out NoteData note) &&
-                   (Judge(note, currentTick) == JudgeResult.Miss ||
-                    (note.Type == NoteData.NoteType.LongTail && note.Tick <= currentTick)))
+            while (JudgeQueue.TryPeek(out Note note))
             {
-                JudgeQueue.Dequeue();
-                JudgeEvent?.Invoke(JudgeResult.Miss);
+                if (note.Data.Type == NoteData.NoteType.LongTail && note.Data.Tick <= currentTick)
+                {
+                    DequeueAndDisable();
+                }
+                else if (Judge(note, currentTick) == JudgeResult.Miss)
+                {
+                    JudgeEvent?.Invoke(JudgeResult.Miss);
+                    DequeueAndDisable();
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        public void DequeueAndDisable()
+        {
+            if (JudgeQueue.TryDequeue(out Note note))
+            {
+                note.gameObject.SetActive(false);
             }
         }
 
         public void Click(long clickTick)
         {
-            if (JudgeQueue.TryPeek(out NoteData note))
+            if (JudgeQueue.TryPeek(out Note note))
             {
                 var judge = Judge(note, clickTick);
                 if (judge != JudgeResult.None &&
-                    (note.Type == NoteData.NoteType.Short ||
-                     note.Type == NoteData.NoteType.Long))
+                    (note.Data.Type == NoteData.NoteType.Short ||
+                     note.Data.Type == NoteData.NoteType.Long))
                 {
-                    JudgeQueue.Dequeue();
                     JudgeEvent?.Invoke(judge);
+                    DequeueAndDisable();
                 }
             }
         }
 
         public void Cancel(long cancelTick)
         {
-            if (JudgeQueue.TryPeek(out NoteData note) && note.Type == NoteData.NoteType.LongTail)
+            if (JudgeQueue.TryPeek(out Note note) && note.Data.Type == NoteData.NoteType.LongTail)
             {
-                var judge = Judge(note.Tick, cancelTick);
-                if (judge == JudgeResult.None || judge == JudgeResult.VeryEarly)
+                if (note.Data.Tick > cancelTick + JUDGE_BAD)
                 {
                     JudgeEvent?.Invoke(JudgeResult.Miss);
+                    DequeueAndDisable();
                 }
-                JudgeQueue.Dequeue();
             }
         }
+
+        public static JudgeResult Judge(Note note, long clickTick) =>
+            Judge(note.Data.Tick, clickTick);
 
         public static JudgeResult Judge(NoteData note, long clickTick) =>
             Judge(note.Tick, clickTick);
@@ -182,17 +178,17 @@ public class ChartPlayer
             long diff = clickTick - noteTick;
             long absDiff = diff < 0 ? -diff : diff;
 
-            if (absDiff <= JUDGE_PERFECT)
+            if (absDiff < JUDGE_PERFECT)
             {
                 return JudgeResult.Perfect;
             }
 
-            if (absDiff <= JUDGE_GOOD)
+            if (absDiff < JUDGE_GOOD)
             {
                 return diff < 0 ? JudgeResult.Early : JudgeResult.Late;
             }
 
-            if (absDiff <= JUDGE_BAD)
+            if (absDiff < JUDGE_BAD)
             {
                 return diff < 0 ? JudgeResult.VeryEarly : JudgeResult.VeryLate;
             }
