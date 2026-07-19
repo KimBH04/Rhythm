@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class ChartManager : MonoBehaviour
 {
-    public const float TICK_RATE = ChartPlayer.TICK_RATE;
+    public const double TICK_RATE = ChartPlayer.TICK_RATE;
 
     public static ChartManager Instance { get; private set; }
 
@@ -129,7 +129,7 @@ public class ChartManager : MonoBehaviour
 
         while (!player.IsEnd)
         {
-            rootTr.localPosition = new(0f, -player.CurrentTick / TICK_RATE * speed);
+            rootTr.localPosition = new(0f, (float)(-player.CurrentTick / TICK_RATE * speed));
             yield return null;
         }
     }   
@@ -139,14 +139,14 @@ public class ChartManager : MonoBehaviour
         notes.Clear();
         foreach (var data in Chart.Notes)
         {
-            Vector3 pos = new(lineLocates[data.Line], data.Tick / TICK_RATE * speed);
+            Vector3 pos = new(lineLocates[data.Line], (float)(data.Tick / TICK_RATE * speed));
             var note = Instantiate(noteObj, pos + transform.position, Quaternion.identity, rootTr).GetComponent<Note>();
             note.Data = data;
             notes.Add(note);
             
             if (data.Type == NoteData.NoteType.Long)
             {
-                pos.y = (data.Tick + data.Length) / TICK_RATE * speed;
+                pos.y = (float)((data.Tick + data.Length) / TICK_RATE * speed);
                 var tail = Instantiate(noteObj, pos + transform.position, Quaternion.identity, rootTr).GetComponent<Note>();
                 tail.Data = new(
                     data.Tick + data.Length,

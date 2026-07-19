@@ -29,7 +29,8 @@ public class Note : MonoBehaviour
 
     private void Start()
     {
-        if (data.Type == NoteData.NoteType.LongTail)
+        if (ChartManager.Instance != null &&
+            data.Type == NoteData.NoteType.LongTail)
         {
             StartCoroutine(DrawTail());
         }
@@ -40,7 +41,7 @@ public class Note : MonoBehaviour
         while (isActiveAndEnabled)
         {
             float judgeDis = -(transform.position.y + 2.5f);
-            float tailDis  = data.Length / ChartManager.TICK_RATE * ChartManager.Speed;
+            float tailDis  = (float)(data.Length / ChartManager.TICK_RATE * ChartManager.Speed);
             float dis = Mathf.Max(judgeDis, tailDis);
             Vector3 pos = new(0f, dis);
             lineObj.SetPosition(1, pos);
