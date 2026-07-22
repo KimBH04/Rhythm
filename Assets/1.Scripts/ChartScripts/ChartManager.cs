@@ -6,28 +6,38 @@ using UnityEngine;
 
 public class ChartManager : MonoBehaviour
 {
-    public const double TICK_RATE = ChartPlayer.TICK_RATE;
+    public const double TICK_RATE_DOUBLE = ChartPlayer.TICK_RATE;
 
     public static ChartManager Instance { get; private set; }
 
-    public static float Speed => Instance.speed;
-
-    public static ChartData Chart { get; private set; }
-    public static IReadOnlyList<Note> Notes => notes;
-
-    private readonly static List<Note> notes = new();
-
-    private static ChartPlayer player;
-
-    private static readonly Dictionary<string, ChartData> ChartDatas = new();
-
     [SerializeField] private float speed = 5f;
 
+    [SerializeField] private Transform offsetTr;
     [SerializeField] private Transform rootTr;
     [SerializeField] private GameObject noteObj;
-    [SerializeField] private float[] lineLocates;
+    [SerializeField] private float[] linePositions;
 
-    public static IEnumerator LoadChartsCoroutine()
+    [SerializeField] private AudioSource audio;
+
+    private AudioClip clip;
+
+    private ChartPlayer player;
+
+    private readonly List<Note> notes = new();
+
+    private readonly Dictionary<string, ChartData> ChartDatas = new();
+
+    public ChartData Chart { get; private set; }
+
+    public float Speed => Instance.speed;
+
+    public float Offset => offsetTr.position.y;
+
+    public IReadOnlyList<float> LinePositions => linePositions;
+
+    public IReadOnlyList<Note> Notes => notes;
+
+    public IEnumerator LoadChartsCoroutine()
     {
         if (ChartDatas.Count > 0)
         {
@@ -73,7 +83,7 @@ public class ChartManager : MonoBehaviour
                 continue;
             }
 
-            chart.Clip = clip;
+            this.clip = clip;
             if (!ChartDatas.TryAdd(name, chart))
             {
                 Debug.LogWarning($"{name} is repeated.");
@@ -81,7 +91,7 @@ public class ChartManager : MonoBehaviour
         }
     }
 
-    public static bool SetChart(string name)
+    public bool SetChart(string name)
     {
         if (ChartDatas.TryGetValue(name, out ChartData chart))
         {
@@ -94,12 +104,12 @@ public class ChartManager : MonoBehaviour
         }
     }
 
-    public void OnClick(Index index)
+    public void OnClick(int index)
     {
         player.OnCilck(index);
     }
 
-    public void OnCancel(Index index)
+    public void OnCancel(int index)
     {
         player.OnCancel(index);
     }
@@ -129,7 +139,7 @@ public class ChartManager : MonoBehaviour
 
         while (!player.IsEnd)
         {
-            rootTr.localPosition = new(0f, (float)(-player.CurrentTick / TICK_RATE * speed));
+            rootTr.localPosition = new(0f, (float)(-player.CurrentTick / TICK_RATE_DOUBLE * speed));
             yield return null;
         }
     }   
@@ -139,21 +149,19 @@ public class ChartManager : MonoBehaviour
         notes.Clear();
         foreach (var data in Chart.Notes)
         {
-            Vector3 pos = new(lineLocates[data.Line], (float)(data.Tick / TICK_RATE * speed));
-            var note = Instantiate(noteObj, pos + transform.position, Quaternion.identity, rootTr).GetComponent<Note>();
-            note.Data = data;
+            var note = Instantiate(noteObj, rootTr).GetComponent<Note>();
+            note.SetNoteData(Chart, data);            
             notes.Add(note);
             
             if (data.Type == NoteData.NoteType.Long)
             {
-                pos.y = (float)((data.Tick + data.Length) / TICK_RATE * speed);
-                var tail = Instantiate(noteObj, pos + transform.position, Quaternion.identity, rootTr).GetComponent<Note>();
-                tail.Data = new(
-                    data.Tick + data.Length,
+                var tail = Instantiate(noteObj, rootTr).GetComponent<Note>();
+                tail.SetNoteData(Chart, new(
+                    data.EndPos,
+                    data.StartPos,
                     data.Line,
-                    NoteData.NoteType.LongTail,
-                    -data.Length
-                );
+                    NoteData.NoteType.LongTail
+                ));
                 notes.Add(tail);
             }
         }

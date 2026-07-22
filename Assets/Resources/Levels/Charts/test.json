@@ -1,48 +1,82 @@
 {
-  "Title": "Tutorial",
-  "BPM": 120,
+  "Title": "Sample Song",
+  "BPM": 128,
+  "TimeSignature": {
+    "Numerator": 4,
+    "Denominator": 4
+  },
   "Notes": [
     {
-      "Tick": 1000000,
+      "StartPos": {
+        "Measure": 5,
+        "Fraction": {
+          "Numerator": 0,
+          "Denominator": 4
+        }
+      },
+      "EndPos": {
+        "Measure": 5,
+        "Fraction": {
+          "Numerator": 0,
+          "Denominator": 4
+        }
+      },
+      "Line": 0,
+      "Type": 0
+    },
+    {
+      "StartPos": {
+        "Measure": 5,
+        "Fraction": {
+          "Numerator": 1,
+          "Denominator": 4
+        }
+      },
+      "EndPos": {
+        "Measure": 5,
+        "Fraction": {
+          "Numerator": 1,
+          "Denominator": 4
+        }
+      },
       "Line": 1,
-      "Type": 0,
-      "Length": 0
+      "Type": 0
     },
     {
-      "Tick": 2000000,
+      "StartPos": {
+        "Measure": 5,
+        "Fraction": {
+          "Numerator": 2,
+          "Denominator": 4
+        }
+      },
+      "EndPos": {
+        "Measure": 10,
+        "Fraction": {
+          "Numerator": 0,
+          "Denominator": 4
+        }
+      },
       "Line": 2,
-      "Type": 1,
-      "Length": 1000000
+      "Type": 1
     },
     {
-      "Tick": 3000000,
+      "StartPos": {
+        "Measure": 10,
+        "Fraction": {
+          "Numerator": 1,
+          "Denominator": 4
+        }
+      },
+      "EndPos": {
+        "Measure": 10,
+        "Fraction": {
+          "Numerator": 1,
+          "Denominator": 4
+        }
+      },
       "Line": 3,
-      "Type": 0,
-      "Length": 0
-    },
-    {
-      "Tick": 4000000,
-      "Line": 2,
-      "Type": 0,
-      "Length": 0
-    },
-    {
-      "Tick": 5000000,
-      "Line": 3,
-      "Type": 0,
-      "Length": 0
-    },
-    {
-      "Tick": 6000000,
-      "Line": 2,
-      "Type": 0,
-      "Length": 0
-    },
-    {
-      "Tick": 7000000,
-      "Line": 3,
-      "Type": 0,
-      "Length": 0
+      "Type": 0
     }
   ]
 }

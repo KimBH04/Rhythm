@@ -14,7 +14,7 @@ public class ChartPlayer
     public const long JUDGE_GOOD    = 100_000;
     public const long JUDGE_BAD     = 250_000;
 
-    public static ChartData Data => ChartManager.Chart;
+    public static ChartData Data => ChartManager.Instance.Chart;
 
     public event Action<long> TickAdvancedBy;
     
@@ -22,13 +22,13 @@ public class ChartPlayer
 
     public event Action OnPlayEnd;
 
+    private readonly Stopwatch timer = new();
+
+    private readonly Line[] Lines = new Line[LINE_COUNT];
+
     public long CurrentTick => (long)(timer.Elapsed.TotalSeconds * TICK_RATE);
     
     public bool IsEnd => Lines.All(x => x.IsEnd());
-
-    private readonly Stopwatch timer = new();
-
-    private readonly LineData[] Lines = new LineData[LINE_COUNT];
 
     public ChartPlayer()
     {
@@ -42,9 +42,9 @@ public class ChartPlayer
             TickAdvancedBy += line.DequeueNote;
         }
 
-        foreach (var note in ChartManager.Notes)
+        foreach (var note in ChartManager.Instance.Notes)
         {
-            Lines[note.Data.Line].AddNote(note);
+            Lines[note.Line].AddNote(note);
         }
     }
 
@@ -62,17 +62,17 @@ public class ChartPlayer
         OnPlayEnd?.Invoke();
     }
 
-    public void OnCilck(Index line)
+    public void OnCilck(int line)
     {
         Lines[line].Click(CurrentTick);
     }
 
-    public void OnCancel(Index line)
+    public void OnCancel(int line)
     {
         Lines[line].Cancel(CurrentTick);
     }
 
-    public class LineData
+    public class Line
     {
         private int currentNoteIdx = 0;
 
@@ -104,7 +104,7 @@ public class ChartPlayer
                 currentNoteIdx++;
 
                 if (currentNoteIdx < NoteList.Count &&
-                    NoteList[currentNoteIdx].Data.Type == NoteData.NoteType.LongTail)
+                    NoteList[currentNoteIdx].Type == NoteData.NoteType.LongTail)
                 {
                     JudgeQueue.Enqueue(NoteList[currentNoteIdx]);
                     currentNoteIdx++;
@@ -116,7 +116,7 @@ public class ChartPlayer
         {
             while (JudgeQueue.TryPeek(out Note note))
             {
-                if (note.Data.Type == NoteData.NoteType.LongTail && note.Data.Tick <= currentTick)
+                if (note.Type == NoteData.NoteType.LongTail && note.StartTick <= currentTick)
                 {
                     DequeueAndDisable();
                 }
@@ -146,8 +146,8 @@ public class ChartPlayer
             {
                 var judge = Judge(note, clickTick);
                 if (judge != JudgeResult.None &&
-                    (note.Data.Type == NoteData.NoteType.Short ||
-                     note.Data.Type == NoteData.NoteType.Long))
+                    (note.Type == NoteData.NoteType.Short ||
+                     note.Type == NoteData.NoteType.Long))
                 {
                     JudgeEvent?.Invoke(judge);
                     DequeueAndDisable();
@@ -157,9 +157,9 @@ public class ChartPlayer
 
         public void Cancel(long cancelTick)
         {
-            if (JudgeQueue.TryPeek(out Note note) && note.Data.Type == NoteData.NoteType.LongTail)
+            if (JudgeQueue.TryPeek(out Note note) && note.Type == NoteData.NoteType.LongTail)
             {
-                if (note.Data.Tick > cancelTick + JUDGE_BAD)
+                if (note.StartTick > cancelTick + JUDGE_BAD)
                 {
                     JudgeEvent?.Invoke(JudgeResult.Miss);
                     DequeueAndDisable();
@@ -168,10 +168,7 @@ public class ChartPlayer
         }
 
         public static JudgeResult Judge(Note note, long clickTick) =>
-            Judge(note.Data.Tick, clickTick);
-
-        public static JudgeResult Judge(NoteData note, long clickTick) =>
-            Judge(note.Tick, clickTick);
+            Judge(note.StartTick, clickTick);
 
         public static JudgeResult Judge(long noteTick, long clickTick)
         {

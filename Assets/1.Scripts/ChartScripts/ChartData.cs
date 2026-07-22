@@ -7,26 +7,50 @@ using UnityEngine;
 [Serializable]
 public class NoteData : IComparable<NoteData>
 {
-    public long Tick { get; private set; }
+    public GreatFraction StartPos { get; private set; }
+
+    public GreatFraction EndPos   { get; private set; }
 
     public int Line { get; private set; }
 
     public NoteType Type { get; private set; }
 
-    public long Length { get; private set; }
-
-    [JsonConstructor]
-    public NoteData(long tick, int line, NoteType type, long length = 0)
+    public NoteData(
+        int measure,
+        int numerator,
+        int denominator,
+        int endMeasure,
+        int endNumerator,
+        int endDenominator,
+        int line,
+        NoteType type
+    )
     {
-        Tick = tick;
+        StartPos = new(measure, numerator, denominator);
+
+        EndPos = new(endMeasure, endNumerator, endDenominator);
+
         Line = line;
         Type = type;
-        Length = length;
+    }
+
+    [JsonConstructor]
+    public NoteData(
+        GreatFraction startPos,
+        GreatFraction endPos,
+        int line,
+        NoteType type
+    )
+    {
+        StartPos = startPos;
+        EndPos   = endPos;
+        Line     = line;
+        Type     = type;
     }
 
     public int CompareTo(NoteData other)
     {
-        return Tick.CompareTo(other.Tick);
+        return StartPos.CompareTo(other.StartPos);
     }
 
     public enum NoteType
@@ -44,23 +68,24 @@ public class ChartData
 
     public int BPM { get; private set; }
 
+    public Fraction TimeSignature { get; private set; }
+
     public List<NoteData> Notes { get; private set; }
 
-    [JsonIgnore]
-    public AudioClip Clip { get; set; }
-
     [JsonConstructor]
-    public ChartData(string title, int bpm, List<NoteData> notes)
+    public ChartData(string title, int bpm, Fraction timeSignature, List<NoteData> notes)
     {
         Title = title;
         BPM = bpm;
+        TimeSignature = timeSignature;
         Notes = notes.ToList();
     }
 
-    public ChartData(string title, int bpm, IEnumerable<NoteData> notes)
+    public ChartData(string title, int bpm, Fraction timeSignature, IEnumerable<NoteData> notes)
     {
         Title = title;
         BPM = bpm;
+        TimeSignature = timeSignature;
         Notes = notes.ToList();
     }
 }

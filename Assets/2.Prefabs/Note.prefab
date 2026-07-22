@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Note
   noteBody: {fileID: 3274664472707290103}
-  lineObj: {fileID: 5204606591566222851}
+  longTail: {fileID: 5204606591566222851}
 --- !u!1 &3274664472707290103
 GameObject:
   m_ObjectHideFlags: 0

@@ -844,13 +844,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChartManager
   speed: 15
+  offsetTr: {fileID: 1091872816}
   rootTr: {fileID: 1240775962}
   noteObj: {fileID: 2031475543693505244, guid: 92e6d92621b00d242b2ba7f8f6509b39, type: 3}
-  lineLocates:
+  linePositions:
   - -1.8
   - -0.6
   - 0.6
   - 1.8
+  audio: {fileID: 0}
 --- !u!114 &2142331076
 MonoBehaviour:
   m_ObjectHideFlags: 0
