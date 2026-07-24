@@ -33,7 +33,7 @@ public class EditorNote : MonoBehaviour, IComparable<EditorNote>
 
     private void Update()
     {
-        var y = (StartPosition.GetDouble() - EditorManager.Instance.LocateY) * EditorManager.Instance.Scale;
+        var y = (StartPosition.GetDouble() - EditorManager.Instance.Scroll) * EditorManager.Instance.Scale;
         transform.localPosition = new(
             EditorManager.Instance.LinePositions[Line],
             (float)y

@@ -14,14 +14,15 @@ public class EditorManager : MonoBehaviour
 
     [SerializeField] private GameObject beatLineObj;
 
+    [SerializeField] private Transform lineRoot;
     [SerializeField] private int lineCount = 100;
 
     private readonly List<EditorNote> notes = new();
 
     private readonly List<LineRenderer> beatLineRenderers = new();
 
-    public float LocateY { get; set; } = 0f;
-    public float Scale   { get; set; } = 4f;
+    public float Scroll { get; private set; } = 0f;
+    public float Scale   { get; private set; } = 4f;
     public Fraction TimeSignature { get; private set; } = new(4, 4);
 
     public int Division { get; private set; } = 4;
@@ -79,6 +80,17 @@ public class EditorManager : MonoBehaviour
         Division = values[index];
     }
 
+    public void SetScrollY(float value)
+    {
+        Scroll = value * 10f;
+    }
+
+    public void SetScale(float value)
+    {
+        Scale = value * 16f + 2f;
+
+    }
+
     public void Play()
     {
         
@@ -126,20 +138,18 @@ public class EditorManager : MonoBehaviour
         var offset = rootTr.position.y;
         NotePlacementInput.OnTrackClickEvent += (line, worldPointY) =>
         {
-            checked
-            {
-                var y = (worldPointY - LocateY - offset) / Scale;
-                var me = (int)y;
-                var nu = (int)Math.Round(y % 1 * Division);
-                var de = Division;
+            var y = (worldPointY - offset) / Scale + Scroll;
+            Debug.Log(y);
+            var me = (int)y;
+            var nu = (int)Math.Round(y % 1 * Division, MidpointRounding.AwayFromZero);
+            var de = Division;
 
-                AddNote(line, me, nu, de);
-            }
+            AddNote(line, me, nu, de);
         };
         
         for (int i = 0; i < lineCount; i++)
         {
-            var line = Instantiate(beatLineObj, transform).GetComponent<LineRenderer>();
+            var line = Instantiate(beatLineObj, lineRoot).GetComponent<LineRenderer>();
             line.positionCount = 2;
             beatLineRenderers.Add(line);
         }
@@ -154,10 +164,11 @@ public class EditorManager : MonoBehaviour
     {
         for (int i = 0; i < lineCount; i++)
         {
-            var pos  = (double)(i + LocateY) * Scale / Division;
+            var x = i % Division == 0 ? 2.5f : 2f;
+            var pos  = ((float)i / Division - Scroll) * Scale;
             var line = beatLineRenderers[i];
-            Vector3 begin = new(-2, (float)pos);
-            Vector3 end   = new( 2, (float)pos);
+            Vector3 begin = new(-x, pos);
+            Vector3 end   = new( x, pos);
             line.SetPosition(0, begin);
             line.SetPosition(1, end);
         }
